@@ -34,7 +34,7 @@ class _SearchPageState extends State<searchPage> {
       infoWindow: const InfoWindow(
         title: '17th St. Lacson',
       ),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow), // Change marker color here
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange), // Change marker color here
     );
 
 Marker marker1 = Marker(
@@ -43,7 +43,7 @@ Marker marker1 = Marker(
       infoWindow: const InfoWindow(
         title: 'Bata',
       ),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow), // Change marker color here
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange), // Change marker color here
     );
 
     Marker marker2 = Marker(
@@ -52,7 +52,7 @@ Marker marker1 = Marker(
       infoWindow: const InfoWindow(
         title: 'Mansilingan',
       ),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow), // Change marker color here
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange), // Change marker color here
     );
     
 Marker marker3 = Marker(
@@ -61,7 +61,7 @@ Marker marker3 = Marker(
       infoWindow: const InfoWindow(
         title: 'Talisay',
       ),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow), // Change marker color here
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange), // Change marker color here
     );
 
 Marker marker4 = Marker(
@@ -70,7 +70,7 @@ Marker marker4 = Marker(
       infoWindow: const InfoWindow(
         title: 'Tangub',
       ),
-      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow), // Change marker color here
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange), // Change marker color here
     );
 
 

@@ -13,7 +13,7 @@ class homePage extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xffeab857)),
+        colorScheme: ColorScheme.fromSeed(seedColor: Color.fromARGB(255, 234, 184, 87)),
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'Paw Rescuer'),
@@ -148,76 +148,81 @@ class _SecondRouteState extends State<SecondRoute> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 40.0, vertical: 20.0),
-                child: GridView.builder(
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 4.0,
-                    mainAxisSpacing: 4.0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Color.fromARGB(255, 19, 19, 19)), // Add border here
                   ),
-                  itemCount: _images.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Image.file(
-                      File(_images[index].path),
-                      fit: BoxFit.cover,
-                    );
-                  },
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 4.0,
+                      mainAxisSpacing: 4.0,
+                    ),
+                    itemCount: _images.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Image.file(
+                        File(_images[index].path),
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
             Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    Container(
-      width: 100,
-      height: 50, 
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10), 
-        color: Color.fromARGB(255, 255, 246, 221),
-      ),
-      child: IconButton(
-        onPressed: _loadAssets,
-        icon: const Icon(Icons.add_photo_alternate),
-        iconSize: 30, 
-        color: Colors.black, 
-      ),
-    ),
-    const SizedBox(width: 10), 
-    Container(
-      width: 100,
-      height: 50, 
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10), 
-        color: Color.fromARGB(255, 255, 246, 221), 
-      ),
-      child: IconButton(
-        onPressed: () {
-          _navigateToMapScreen(context);
-        },
-        icon: const Icon(Icons.location_on),
-        iconSize: 30,
-        color: Colors.black, 
-      ),
-    ),
-    const SizedBox(width: 10), 
-    Container(
-      width: 100, 
-      height: 50, 
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10), 
-        color: Color.fromARGB(255, 255, 246, 221), 
-      ),
-      child: IconButton(
-        onPressed: () {
-          _selectDate(context);
-        },
-        icon: const Icon(Icons.calendar_today),
-        iconSize: 30, 
-        color: Colors.black, 
-      ),
-    ),
-  ],
-),
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Color.fromARGB(255, 255, 246, 221),
+                  ),
+                  child: IconButton(
+                    onPressed: _loadAssets,
+                    icon: const Icon(Icons.add_photo_alternate),
+                    iconSize: 30,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  width: 100,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Color.fromARGB(255, 255, 246, 221),
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      _navigateToMapScreen(context);
+                    },
+                    icon: const Icon(Icons.location_on),
+                    iconSize: 30,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  width: 100,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Color.fromARGB(255, 255, 246, 221),
+                  ),
+                  child: IconButton(
+                    onPressed: () {
+                      _selectDate(context);
+                    },
+                    icon: const Icon(Icons.calendar_today),
+                    iconSize: 30,
+                    color: Colors.black,
+                  ),
+                ),
+              ],
+            ),
 const SizedBox(height: 20), // Add space between the rows
            Column(
   children: [

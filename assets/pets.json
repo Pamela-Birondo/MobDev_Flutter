@@ -1,63 +1,67 @@
 [
-    {
-        "imageUrl": "images/stray1.jpg",
-        "date": "2024-03-11",
-        "location": "Mansilingan",
-        "breed": "Aspin",
-        "gender": "Male",
-        "size": "Medium",
-        "color": "Solid",
-        "actions taken": "Fostered",
-        "condition": "Injured",
-        "postedBy": "Penny"
-    },
-    {
-        "imageUrl": "images/stray2.jpg",
-        "date": "2023-10-12",
-        "location": "Bata",
-        "breed": "Aspin",
-        "gender": "Female",
-        "size": "Medium",
-        "color": "Bi-Color",
-        "actions taken": "Adopted",
-        "condition": "Fine",
-        "postedBy": "Jia"
-    },
-    {
-        "imageUrl": "images/stray3.jpg",
-        "date": "2024-06-02",
-        "location": "17th St. Lacson",
-        "breed": "Puspin",
-        "gender": "Male",
-        "size": "Small",
-        "color": "Bi-Color",
-        "actions taken": "Brought to shelter",
-        "condition": "Fine",
-        "postedBy": "Casandra"
-    },
-    {
+  {
+      "imageUrl": "images/stray1.jpg",
+      "date": "2024-03-11",
+      "location": "Mansilingan",
+      "breed": "Aspin",
+      "gender": "Male",
+      "size": "Medium",
+      "color": "Solid",
+      "actions taken": "Fostered",
+      "condition": "Injured",
+      "postedBy": "Penny",
+      "isRescued": true
+  },
+  {
+      "imageUrl": "images/stray2.jpg",
+      "date": "2023-10-12",
+      "location": "Bata",
+      "breed": "Aspin",
+      "gender": "Female",
+      "size": "Medium",
+      "color": "Bi-Color",
+      "actions taken": "Adopted",
+      "condition": "Fine",
+      "postedBy": "Jia",
+      "isRescued": true
+  },
+  {
+      "imageUrl": "images/stray3.jpg",
+      "date": "2024-06-02",
+      "location": "17th St. Lacson",
+      "breed": "Puspin",
+      "gender": "Male",
+      "size": "Small",
+      "color": "Bi-Color",
+      "actions taken": "Brought to shelter",
+      "condition": "Fine",
+      "postedBy": "Casandra",
+      "isRescued": true
+  },
+  {
       "imageUrl": "images/pet1.jpg",
       "date": "2024-03-10",
       "location": "Tangub",
       "breed": "Golden Retriever",
       "gender": "Male",
-        "size": "Small",
+      "size": "Small",
       "color": "Solid",
       "actions taken": "Adopted",
       "condition": "Fine",
-      "postedBy": "Ella"
-    },
-    {
+      "postedBy": "Ella",
+      "isRescued": false
+  },
+  {
       "imageUrl": "images/pet2.jpg",
       "date": "2024-03-09",
       "location": "Talisay",
       "breed": "Puspin",
-      "gender": "female",
-        "size": "Small",
+      "gender": "Female",
+      "size": "Small",
       "color": "Bi-Color",
       "actions taken": "No Actions Taken",
       "condition": "Fine",
-      "postedBy": "Lorvin"
-    }
-    
-  ]
+      "postedBy": "Lorvin",
+      "isRescued": false
+  }
+]

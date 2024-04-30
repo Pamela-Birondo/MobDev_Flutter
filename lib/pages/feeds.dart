@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'pet_model.dart';
 import 'package:intl/intl.dart';
 
-
 class FeedsPage extends StatefulWidget {
   const FeedsPage({Key? key}) : super(key: key);
 
@@ -16,6 +15,7 @@ class _FeedsPageState extends State<FeedsPage> {
   late Future<List<Pet>> _futurePets;
   late TextEditingController _searchController;
   bool _isSearchVisible = false;
+  int _selectedFeed = 0; // 0 for rescued, 1 for not rescued
 
   @override
   void initState() {
@@ -37,21 +37,37 @@ class _FeedsPageState extends State<FeedsPage> {
   }
 
   List<Pet> _filterPets(List<Pet> pets, String query) {
-    if (query.isEmpty) {
-      return pets;
-    }
-    return pets.where((pet) {
-      return pet.breed.toLowerCase().contains(query.toLowerCase()) ||
-          pet.color.toLowerCase().contains(query.toLowerCase()) ||
-          pet.gender.toLowerCase().contains(query.toLowerCase()) ||
-          pet.postedBy.toLowerCase().contains(query.toLowerCase()) ||
-          pet.location.toLowerCase().contains(query.toLowerCase());
+    // Filter pets based on the query
+    final filteredPets = pets.where((pet) {
+        return pet.breed.toLowerCase().contains(query.toLowerCase()) ||
+            pet.color.toLowerCase().contains(query.toLowerCase()) ||
+            pet.gender.toLowerCase().contains(query.toLowerCase()) ||
+            pet.postedBy.toLowerCase().contains(query.toLowerCase()) ||
+            pet.location.toLowerCase().contains(query.toLowerCase());
     }).toList();
-  }
+
+    // Further filter based on the selected feed
+    return filteredPets.where((pet) {
+        // Check if selected feed is rescued or not rescued
+        if (_selectedFeed == 0) {
+            // Return only pets that have been rescued
+            return pet.isRescued;
+        } else {
+            // Return only pets that haven't been rescued
+            return !pet.isRescued;
+        }
+    }).toList();
+}
 
   void _toggleSearchVisibility() {
     setState(() {
       _isSearchVisible = !_isSearchVisible;
+    });
+  }
+
+  void _onToggleFeed(int index) {
+    setState(() {
+      _selectedFeed = index;
     });
   }
 
@@ -72,6 +88,7 @@ class _FeedsPageState extends State<FeedsPage> {
               )
             : const Text(''),
         actions: [
+          // Search toggle button
           IconButton(
             icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
             onPressed: _toggleSearchVisibility,
@@ -80,6 +97,22 @@ class _FeedsPageState extends State<FeedsPage> {
       ),
       body: Column(
         children: [
+          // Toggle buttons for feed selection
+          ToggleButtons(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 90),
+                child: Text('Rescued'),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 75),
+                child: Text('Not Rescued'),
+              ),
+            ],
+            isSelected: [_selectedFeed == 0, _selectedFeed == 1],
+            onPressed: _onToggleFeed,
+          ),
+          // Expanded widget for displaying the feed
           Expanded(
             child: FutureBuilder<List<Pet>>(
               future: _futurePets,

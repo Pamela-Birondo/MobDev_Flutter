@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
-import 'dart:convert';
-import 'pet_model.dart';
 import 'package:intl/intl.dart';
+//import 'package:flutter/services.dart' show rootBundle;
+//import 'dart:convert';
+import 'pet_model.dart';
+//import 'package:intl/intl.dart';
+import 'Database_helper.dart';
 
 class FeedsPage extends StatefulWidget {
   const FeedsPage({Key? key}) : super(key: key);
@@ -16,6 +20,7 @@ class _FeedsPageState extends State<FeedsPage> {
   late TextEditingController _searchController;
   bool _isSearchVisible = false;
   int _selectedFeed = 0; // 0 for rescued, 1 for not rescued
+  
 
   @override
   void initState() {
@@ -31,33 +36,52 @@ class _FeedsPageState extends State<FeedsPage> {
   }
 
   Future<List<Pet>> _loadPets() async {
-    final String jsonString = await rootBundle.loadString('assets/pets.json');
-    final List<dynamic> jsonList = json.decode(jsonString);
-    return jsonList.map((json) => Pet.fromJson(json)).toList();
+  return DatabaseHelper.instance.getStrays().then((strays) {
+    final List<Pet> pets = strays.map((stray) => Pet.fromMap(stray)).toList();
+
+ // Split into rescued and not rescued lists
+    final rescuedPets = pets.where((pet) => pet.isRescued).toList();
+    final notRescuedPets = pets.where((pet) => !pet.isRescued).toList();
+
+    print('Loaded ${rescuedPets.length} rescued pets');
+    print('Loaded ${notRescuedPets.length} not rescued pets');
+    
+    // Return appropriate list based on selected feed
+    return _selectedFeed == 0 ? rescuedPets : notRescuedPets;
+  }
+
+    // Logging to check isRescued values
+    /*pets.forEach((pet) {
+      print('Is Rescued: ${pet.isRescued}');
+    });
+
+    return pets;
+  });*/
+  );
   }
 
   List<Pet> _filterPets(List<Pet> pets, String query) {
     // Filter pets based on the query
     final filteredPets = pets.where((pet) {
-        return pet.breed.toLowerCase().contains(query.toLowerCase()) ||
-            pet.color.toLowerCase().contains(query.toLowerCase()) ||
-            pet.gender.toLowerCase().contains(query.toLowerCase()) ||
-            pet.postedBy.toLowerCase().contains(query.toLowerCase()) ||
-            pet.location.toLowerCase().contains(query.toLowerCase());
+      return pet.breed.toLowerCase().contains(query.toLowerCase()) ||
+          pet.color.toLowerCase().contains(query.toLowerCase()) ||
+          pet.gender.toLowerCase().contains(query.toLowerCase()) ||
+          pet.postedBy.toLowerCase().contains(query.toLowerCase()) ||
+          pet.location.toLowerCase().contains(query.toLowerCase());
     }).toList();
 
     // Further filter based on the selected feed
     return filteredPets.where((pet) {
-        // Check if selected feed is rescued or not rescued
-        if (_selectedFeed == 0) {
-            // Return only pets that have been rescued
-            return pet.isRescued;
-        } else {
-            // Return only pets that haven't been rescued
-            return !pet.isRescued;
-        }
+      // Check if selected feed is rescued or not rescued
+      if (_selectedFeed == 0) {
+        // Return only pets that have been rescued
+        return pet.isRescued;
+      } else {
+        // Return only pets that haven't been rescued
+        return !pet.isRescued;
+      }
     }).toList();
-}
+  }
 
   void _toggleSearchVisibility() {
     setState(() {
@@ -65,12 +89,37 @@ class _FeedsPageState extends State<FeedsPage> {
     });
   }
 
-  void _onToggleFeed(int index) {
-    setState(() {
-      _selectedFeed = index;
-    });
-  }
+Future<List<Pet>> _loadRescuedPets() async {
+  print('Loading rescued pets...');
+  return _loadPets().then((pets) {
+    final rescuedPets = pets.where((pet) => pet.isRescued).toList();
+    print('Loaded ${rescuedPets.length} rescued pets');
+    return rescuedPets;
+  });
+}
 
+Future<List<Pet>> _loadNotRescuedPets() async {
+  print('Loading not rescued pets...');
+  return _loadPets().then((pets) {
+    final notRescuedPets = pets.where((pet) => !pet.isRescued).toList();
+    print('Loaded ${notRescuedPets.length} not rescued pets');
+    return notRescuedPets;
+  });
+}
+
+
+ void _onToggleFeed(int index) {
+  setState(() {
+    _selectedFeed = index;
+    if (_selectedFeed == 0) {
+      // Load rescued pets
+      _futurePets = _loadRescuedPets();
+    } else {
+      // Load not rescued pets
+      _futurePets = _loadNotRescuedPets();
+    }
+  });
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,28 +166,26 @@ class _FeedsPageState extends State<FeedsPage> {
             child: FutureBuilder<List<Pet>>(
               future: _futurePets,
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return const Center(child: Text('Error loading data'));
-                } else {
-                  final List<Pet> pets = snapshot.data!;
-                  final filteredPets = _filterPets(
-                    pets,
-                    _searchController.text,
-                  );
-                  return ListView.builder(
-                    itemCount: filteredPets.length,
-                    itemBuilder: (context, index) {
-                      final pet = filteredPets[index];
-                      return InformationCard(
-                        width: 500,
-                        pet: pet,
-                      );
-                    },
-                  );
-                }
-              },
+  if (snapshot.connectionState == ConnectionState.waiting) {
+    return const Center(child: CircularProgressIndicator());
+  } else if (snapshot.hasError) {
+    return Center(
+      child: Text('Error loading data: ${snapshot.error}'),
+    );
+  } else {
+    final List<Pet> pets = snapshot.data!;
+    return ListView.builder(
+      itemCount: pets.length,
+      itemBuilder: (context, index) {
+        final pet = pets[index];
+        return InformationCard(
+          width: 500,
+          pet: pet,
+        );
+      },
+    );
+  }
+},
             ),
           ),
         ],
@@ -161,7 +208,6 @@ class InformationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Handle card click event here, for example, show details in a dialog
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -172,15 +218,14 @@ class InformationCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(
-                      pet.imageUrl,
+                    Image.file(
+                      File(pet.images),
                       width: 400,
-                      height: 200,
+                      height: 300,
                       fit: BoxFit.cover,
                     ),
                     SizedBox(height: 10),
-                    SizedBox(height: 1),
-                    _buildCardItem('Posted by', pet.postedBy, 200.0),
+                    _buildCardItem('Posted by', pet.postedBy, 150.0),
                     SizedBox(height: 1),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -207,7 +252,7 @@ class InformationCard extends StatelessWidget {
                               children: [
                                 _buildCardItem('Size', pet.size, 150.0),
                                 _buildCardItem('Color', pet.color, 150.0),
-                                _buildCardItem('Actions Taken', pet.actionstaken, 150.0),
+                                _buildCardItem('Actions Taken', pet.actionTaken, 150.0),
                                 _buildCardItem('Condition', pet.condition, 150.0),
                               ],
                             ),
@@ -328,10 +373,10 @@ class InformationCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
-                pet.imageUrl,
+              Image.file(
+                File(pet.images),
                 width: double.infinity,
-                height: 250,
+                height: 300,
                 fit: BoxFit.cover,
               ),
               Row(
@@ -373,7 +418,6 @@ class InformationCard extends StatelessWidget {
   Widget _buildCardItem(String title, dynamic value, double itemWidth) {
     String displayValue = value.toString();
     if (value is DateTime) {
-      // Convert DateTime to a formatted string
       displayValue = DateFormat.yMMMMd().format(value);
     }
     if (title == 'Posted by') {
@@ -427,14 +471,14 @@ class InformationCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16.0,
                   fontWeight: FontWeight.bold,
-                  color: const Color.fromARGB(255, 0, 0, 0),
+                  color: Colors.black,
                 ),
               ),
               Text(
                 displayValue,
                 style: TextStyle(
                   fontSize: 14.0,
-                  color: const Color.fromARGB(255, 59, 59, 59),
+                  color: Colors.black,
                 ),
               ),
             ],

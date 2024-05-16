@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'Database_helper.dart'; 
 
 class homePage extends StatelessWidget {
   const homePage({Key? key});
@@ -88,513 +89,613 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class SecondRoute extends StatefulWidget {
-  const SecondRoute({Key? key}) : super(key: key);
+    const SecondRoute({Key? key}) : super(key: key);
 
-  @override
-  State<SecondRoute> createState() => _SecondRouteState();
+    @override
+    State<SecondRoute> createState() => _SecondRouteState();
 }
 
 class _SecondRouteState extends State<SecondRoute> {
-  List<XFile> _images = [];
-  DateTime selectedDate = DateTime.now();
-  // String? _selectedItem1;
-  // String? _selectedItem2;
-  List<bool> _isSelected1 = [false, false];
-  List<bool> _isSelected2 = [false, false, false];
-  int? _selectedItem1Index;
-  int? _selectedItem2Index;
-  int? _selectedItem3Index;
-  int? _selectedItem4Index;
+    List<XFile> _images = [];
+    DateTime selectedDate = DateTime.now();
+    List<bool> _isSelected1 = [false, false];
+    List<bool> _isSelected2 = [false, false, false];
+    int? _selectedItem1Index;
+    int? _selectedItem2Index;
+    int? _selectedItem3Index;
+    int? _selectedItem4Index;
+    LatLng? _selectedLocation; // Declare the selected location
 
-  Future<void> _loadAssets() async {
-    final picker = ImagePicker();
-    List<XFile>? resultList;
-    try {
-      resultList = await picker.pickMultiImage();
-    } catch (e) {
-      print('Error picking images: $e');
-    }
+    // Create an instance of DatabaseHelper
+    final DatabaseHelper dbHelper = DatabaseHelper.instance;
 
-    if (resultList != null) {
-      setState(() {
-        _images = resultList!;
-      });
-    }
-  }
-
-  List<File> getFilesFromXFiles(List<XFile> xFiles) {
-    return xFiles.map((xFile) => File(xFile.path)).toList();
-  }
-
-  void _navigateToMapScreen(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MapScreen()),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        //title: const Text("Select Images"),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            SizedBox(
-              height: 290, // Adjust the height as needed
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 40.0, vertical: 20.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Color.fromARGB(255, 19, 19, 19)), // Add border here
-                  ),
-                  child: GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 4.0,
-                      mainAxisSpacing: 4.0,
-                    ),
-                    itemCount: _images.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Image.file(
-                        File(_images[index].path),
-                        fit: BoxFit.cover,
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Color.fromARGB(255, 255, 246, 221),
-                  ),
-                  child: IconButton(
-                    onPressed: _loadAssets,
-                    icon: const Icon(Icons.add_photo_alternate),
-                    iconSize: 30,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Container(
-                  width: 100,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Color.fromARGB(255, 255, 246, 221),
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      _navigateToMapScreen(context);
-                    },
-                    icon: const Icon(Icons.location_on),
-                    iconSize: 30,
-                    color: Colors.black,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Container(
-                  width: 100,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Color.fromARGB(255, 255, 246, 221),
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      _selectDate(context);
-                    },
-                    icon: const Icon(Icons.calendar_today),
-                    iconSize: 30,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
-const SizedBox(height: 20), // Add space between the rows
-           Column(
-  children: [
-    Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: const Color.fromARGB(255, 161, 160, 160),
-            ),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: ToggleButtons(
-            isSelected: _isSelected1,
-            onPressed: (int index) {
-              setState(() {
-                for (int buttonIndex = 0;
-                    buttonIndex < _isSelected1.length;
-                    buttonIndex++) {
-                  if (buttonIndex == index) {
-                    _isSelected1[buttonIndex] = true;
-                  } else {
-                    _isSelected1[buttonIndex] = false;
-                  }
-                }
-              });
-            },
-            children: <Widget>[
-              Container(
-                constraints: const BoxConstraints(minWidth: 60),
-                child: const Text('Male', textAlign: TextAlign.center),
-              ),
-              Container(
-                constraints: const BoxConstraints(minWidth: 60),
-                child: const Text('Female', textAlign: TextAlign.center),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 20), // Add space between the toggle buttons
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: const Color.fromARGB(255, 155, 155, 155),
-            ),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: ToggleButtons(
-            isSelected: _isSelected2,
-            onPressed: (int index) {
-              setState(() {
-                for (int buttonIndex = 0;
-                    buttonIndex < _isSelected2.length;
-                    buttonIndex++) {
-                  if (buttonIndex == index) {
-                    _isSelected2[buttonIndex] = true;
-                  } else {
-                    _isSelected2[buttonIndex] = false;
-                  }
-                }
-              });
-            },
-            children: <Widget>[
-              Container(
-                constraints: const BoxConstraints(minWidth: 60),
-                child: const Text('Small', textAlign: TextAlign.center),
-              ),
-              Container(
-                constraints: const BoxConstraints(minWidth: 60),
-                child: const Text('Medium', textAlign: TextAlign.center),
-              ),
-              Container(
-                constraints: const BoxConstraints(minWidth: 60),
-                child: const Text('Large', textAlign: TextAlign.center),
-              ),
-            ],
-          ),
-        )
-      ],
-    ),
-    const SizedBox(height: 20), // Add space between the rows
-Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    Container(
-      width: 170, // Adjust the width as needed
-      margin: const EdgeInsets.only(right: 10), // Add margin
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: DropdownButton<int>(
-        value: _selectedItem1Index,
-        onChanged: (int? newIndex) {
-          setState(() {
-            _selectedItem1Index = newIndex;
-          });
-        },
-        dropdownColor: Colors.white,
-        underline: SizedBox(),
-        hint: const Text(' Select Breed               '),
-        items: const <DropdownMenuItem<int>>[
-          DropdownMenuItem<int>(
-            value: 0,
-            child: Text(' Aspin'),
-          ),
-          DropdownMenuItem<int>(
-            value: 1,
-            child: Text(' Puspin'),
-          ),
-          DropdownMenuItem<int>(
-            value: 2,
-            child: Text(' Chihuahua'),
-          ),
-          DropdownMenuItem<int>(
-            value: 3,
-            child: Text(' Poodle'),
-          ),
-          DropdownMenuItem<int>(
-            value: 4,
-            child: Text(' Shih Tzu'),
-          ),
-          DropdownMenuItem<int>(
-            value: 5,
-            child: Text(' Persian Cat'),
-          ),
-        ],
-      ),
-    ),
-    Container(
-      width: 170, // Adjust the width as needed
-      margin: const EdgeInsets.only(left: 10), // Add margin
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: DropdownButton<int>(
-        value: _selectedItem2Index,
-        onChanged: (int? newIndex) {
-          setState(() {
-            _selectedItem2Index = newIndex;
-          });
-        },
-        dropdownColor: Colors.white,
-        underline: SizedBox(),
-        hint: const Text(' Select Color               '),
-        items: const <DropdownMenuItem<int>>[
-          DropdownMenuItem<int>(
-            value: 0,
-            child: Text(' Solid'),
-          ),
-          DropdownMenuItem<int>(
-            value: 1,
-            child: Text(' Bi-Color'),
-          ),
-          DropdownMenuItem<int>(
-            value: 2,
-            child: Text(' Tri-color'),
-          ),
-        ],
-      ),
-    ),
-  ],
-),
-const SizedBox(height: 10), // Add space between the rows
-Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    Container(
-      width: 170, // Adjust the width as needed
-      margin: const EdgeInsets.only(right: 10), // Add margin
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: DropdownButton<int>(
-        value: _selectedItem3Index,
-        onChanged: (int? newIndex) {
-          setState(() {
-            _selectedItem3Index = newIndex;
-          });
-        },
-        dropdownColor: Colors.white,
-        underline: SizedBox(),
-        hint: const Text(' Actions Taken            '),
-        items: const <DropdownMenuItem<int>>[
-          DropdownMenuItem<int>(
-            value: 0,
-            child: Text(' No Actions Taken'),
-          ),
-          DropdownMenuItem<int>(
-            value: 1,
-            child: Text(' Adopted'),
-          ),
-          DropdownMenuItem<int>(
-            value: 2,
-            child: Text(' Fostered'),
-          ),
-          DropdownMenuItem<int>(
-            value: 3,
-            child: Text(' Brought to Shelter'),
-          ),
-        ],
-      ),
-    ),
-    Container(
-      width: 170, // Adjust the width as needed
-      margin: const EdgeInsets.only(left: 10), // Add margin
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey),
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: DropdownButton<int>(
-        value: _selectedItem4Index,
-        onChanged: (int? newIndex) {
-          setState(() {
-            _selectedItem4Index = newIndex;
-          });
-        },
-        dropdownColor: Colors.white,
-        underline: SizedBox(),
-        hint: const Text(' Condition                   '),
-        items: const <DropdownMenuItem<int>>[
-          DropdownMenuItem<int>(
-            value: 0,
-            child: Text(' Injured'),
-          ),
-          DropdownMenuItem<int>(
-            value: 1,
-            child: Text(' Fine'),
-          ),
-        ],
-      ),
-    ),
-  ],
-),
-const SizedBox(height: 25),
-                  const SizedBox(
-  width: 350, // Adjust the width of the text input
-  child: Padding(
-    padding: EdgeInsets.all(5.0), // Add padding to all sides
-    child: TextField(
-      maxLines: null, // Allow multiple lines of text
-      decoration: InputDecoration(
-        hintText: '  Other Details', // Placeholder text for the input field
-        border: OutlineInputBorder(), // Border for the input field
-        contentPadding: EdgeInsets.symmetric(vertical: 25.0), // Adjust vertical padding
-      ),
-    ),
-  ),
-),
-    const SizedBox(height: 30), // Add space between the text input and the next row
-    SizedBox(
-      width: 150, // Adjust the width of the save button
-      child: ElevatedButton(
-        onPressed: () {
-          // Add your save functionality here
-        },
-        child: const Text('Save'),
-      ),
-    ),
-  ],
-),
-            const SizedBox(height: 2), // Add space between the text input and the next row
-          ],
-        ),
-      ),
-    );
-  }
-
-
-  Future<void> _selectDate(BuildContext context) async {
-    showDatePicker(
-      context: context,
-      initialDate: selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-      builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            colorScheme: const ColorScheme.light().copyWith(
-              primary: Colors.redAccent,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    ).then((value) {
-      if (value != null) {
+    // Function to load images
+    Future<void> _loadAssets() async {
+        final picker = ImagePicker();
+        List<XFile>? resultList;
+        try {
+            resultList = await picker.pickMultiImage();
+        } catch (e) {
+            print('Error picking images: $e');
+        }
         setState(() {
-          selectedDate = value;
+            _images = resultList ?? [];
         });
-      }
-    });
+    }
+
+    // Function to convert XFiles to Files
+    List<File> getFilesFromXFiles(List<XFile> xFiles) {
+        return xFiles.map((xFile) => File(xFile.path)).toList();
+    }
+
+    // Function to save data
+Future<void> _saveData() async {
+  try {
+    // Extract data from the user interface
+    List<File> imageFiles = getFilesFromXFiles(_images);
+    String formattedDate =
+        "${selectedDate.year}-${selectedDate.month}-${selectedDate.day}";
+    String gender = _isSelected1[0] ? 'Male' : 'Female';
+    String size = ['Small', 'Medium', 'Large']
+        [_isSelected2.indexWhere((element) => element)];
+    String breed = [
+      'Aspin',
+      'Puspin',
+      'Chihuahua',
+      'Poodle',
+      'Shih Tzu',
+      'Persian Cat'
+    ][_selectedItem1Index ?? 0];
+    String color = ['Solid', 'Bi-Color', 'Tri-color']
+        [_selectedItem2Index ?? 0];
+    String actionTaken = ['No Actions Taken', 'Adopted', 'Fostered', 'Brought to Shelter']
+        [_selectedItem3Index ?? 0];
+    String condition = ['Injured', 'Fine'][_selectedItem4Index ?? 0];
+    // Retrieve other details from a text input
+    String details = '';
+    // Determine if the pet is rescued based on actionTaken
+    int isRescued = actionTaken != 'No Actions Taken' ? 1 : 0;
+
+    // Debug prints
+    print('Formatted Date: $formattedDate');
+    print('Gender: $gender');
+    print('Size: $size');
+    print('Breed: $breed');
+    print('Color: $color');
+    print('Action Taken: $actionTaken');
+    print('Condition: $condition');
+    print('Details: $details');
+    print('Is Rescued: $isRescued');
+
+    // Prepare data as a Map<String, dynamic>
+    Map<String, dynamic> strayData = {
+      'images': imageFiles.map((file) => file.path).join(','), // Convert image file paths to comma-separated string
+      'date': formattedDate,
+      'gender': gender,
+      'size': size,
+      'breed': breed,
+      'color': color,
+      'actionTaken': actionTaken,
+      'condition': condition,
+      'details': details,
+      'locationLat': _selectedLocation?.latitude ?? 0, // Add selected location latitude
+      'locationLng': _selectedLocation?.longitude ?? 0, // Add selected location longitude
+      'isRescued': isRescued, // Set the isRescued property
+    };
+
+    // Save the data using DatabaseHelper
+    int id = await dbHelper.insertStray(strayData);
+
+    // Provide feedback to the user
+    if (id > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Data saved successfully with ID: $id')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error saving data.')),
+      );
+    }
+  } catch (e) {
+    print('Error saving data: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('An error occurred while saving data.')),
+    );
   }
 }
 
-class MapScreen extends StatefulWidget {
-  const MapScreen({Key? key}) : super(key: key);
+    // Function to navigate to MapScreen
+    void _navigateToMapScreen(BuildContext context) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => MapScreen(
+                    onLocationSelected: (LatLng location) {
+                        // Set the selected location from MapScreen
+                        setState(() {
+                            _selectedLocation = location;
+                        });
+                    },
+                ),
+            ),
+        );
+    }
 
-  @override
-  _SearchPageState createState() => _SearchPageState();
+    // Function to select a date
+    Future<void> _selectDate(BuildContext context) async {
+        final DateTime? pickedDate = await showDatePicker(
+            context: context,
+            initialDate: selectedDate,
+            firstDate: DateTime(2000),
+            lastDate: DateTime(2101),
+            builder: (BuildContext context, Widget? child) {
+                return Theme(
+                    data: ThemeData.light().copyWith(
+                        colorScheme: const ColorScheme.light().copyWith(
+                            primary: Colors.redAccent,
+                        ),
+                    ),
+                    child: child!,
+                );
+            },
+        );
+
+        if (pickedDate != null && pickedDate != selectedDate) {
+            setState(() {
+                selectedDate = pickedDate;
+            });
+        }
+    }
+
+    @override
+    Widget build(BuildContext context) {
+        return Scaffold(
+            appBar: AppBar(
+                // Title and other AppBar configurations
+            ),
+            body: SingleChildScrollView(
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                        // Image grid for images
+                        SizedBox(
+                            height: 290, // Adjust the height as needed
+                            child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+                                child: Container(
+                                    decoration: BoxDecoration(
+                                        border: Border.all(color: Color.fromARGB(255, 19, 19, 19)),
+                                    ),
+                                    child: GridView.builder(
+                                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 3,
+                                            crossAxisSpacing: 4.0,
+                                            mainAxisSpacing: 4.0,
+                                        ),
+                                        itemCount: _images.length,
+                                        itemBuilder: (BuildContext context, int index) {
+                                            return Image.file(
+                                                File(_images[index].path),
+                                                fit: BoxFit.cover,
+                                            );
+                                        },
+                                    ),
+                                ),
+                            ),
+                        ),
+                        // Icon buttons for image selection, map navigation, and date selection
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                                Container(
+                                    width: 150,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Color.fromARGB(255, 255, 246, 221),
+                                    ),
+                                    child: IconButton(
+                                        onPressed: _loadAssets,
+                                        icon: const Icon(Icons.add_photo_alternate),
+                                        iconSize: 30,
+                                        color: Colors.black,
+                                    ),
+                                ),
+                                const SizedBox(width: 10),
+                                Container(
+                                    width: 150,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Color.fromARGB(255, 255, 246, 221),
+                                    ),
+                                    child: IconButton(
+                                        onPressed: () {
+                                            _navigateToMapScreen(context);
+                                        },
+                                        icon: const Icon(Icons.location_on),
+                                        iconSize: 30,
+                                        color: Colors.black,
+                                    ),
+                                ),
+                                const SizedBox(width: 10),
+                                /*Container(
+                                    width: 100,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Color.fromARGB(255, 255, 246, 221),
+                                    ),
+                                    child: IconButton(
+                                        onPressed: () {
+                                            _selectDate(context);
+                                        },
+                                        icon: const Icon(Icons.calendar_today),
+                                        iconSize: 30,
+                                        color: Colors.black,
+                                    ),
+                                ),*/
+                            ],
+                        ),
+                        const SizedBox(height: 20),
+                        // Gender selection using ToggleButtons
+                        Column(
+                            children: [
+                                Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                        Container(
+                                            decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    color: const Color.fromARGB(255, 161, 160, 160),
+                                                ),
+                                                borderRadius: BorderRadius.circular(8.0),
+                                            ),
+                                            child: ToggleButtons(
+                                                isSelected: _isSelected1,
+                                                onPressed: (int index) {
+                                                    setState(() {
+                                                        for (int buttonIndex = 0;
+                                                             buttonIndex < _isSelected1.length;
+                                                             buttonIndex++) {
+                                                            if (buttonIndex == index) {
+                                                                _isSelected1[buttonIndex] = true;
+                                                            } else {
+                                                                _isSelected1[buttonIndex] = false;
+                                                            }
+                                                        }
+                                                    });
+                                                },
+                                                children:  <Widget>[
+                                                    Container(
+                                                        constraints: const BoxConstraints(minWidth: 60),
+                                                        child: const Text('Male', textAlign: TextAlign.center),
+                                                    ),
+                                                    Container(
+                                                        constraints: const BoxConstraints(minWidth: 60),
+                                                        child: const Text('Female', textAlign: TextAlign.center),
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                        const SizedBox(width: 20),
+                                        Container(
+                                            decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    color: const Color.fromARGB(255, 155, 155, 155),
+                                                ),
+                                                borderRadius: BorderRadius.circular(8.0),
+                                            ),
+                                            child: ToggleButtons(
+                                                isSelected: _isSelected2,
+                                                onPressed: (int index) {
+                                                    setState(() {
+                                                        for (int buttonIndex = 0;
+                                                             buttonIndex < _isSelected2.length;
+                                                             buttonIndex++) {
+                                                            if (buttonIndex == index) {
+                                                                _isSelected2[buttonIndex] = true;
+                                                            } else {
+                                                                _isSelected2[buttonIndex] = false;
+                                                            }
+                                                        }
+                                                    });
+                                                },
+                                                children:  <Widget>[
+                                                    Container(
+                                                        constraints: const BoxConstraints(minWidth: 60),
+                                                        child: const Text('Small', textAlign: TextAlign.center),
+                                                    ),
+                                                    Container(
+                                                        constraints: const BoxConstraints(minWidth: 60),
+                                                        child: const Text('Medium', textAlign: TextAlign.center),
+                                                    ),
+                                                    Container(
+                                                        constraints: const BoxConstraints(minWidth: 60),
+                                                        child: const Text('Large', textAlign: TextAlign.center),
+                                                    ),
+                                                ],
+                                            ),
+                                        )
+                                    ],
+                                ),
+                                const SizedBox(height: 20),
+                                // Breed and color selection using dropdown buttons
+                                Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                        Container(
+                                            width: 170,
+                                            margin: const EdgeInsets.only(right: 10),
+                                            decoration: BoxDecoration(
+                                                border: Border.all(color: Colors.grey),
+                                                borderRadius: BorderRadius.circular(8.0),
+                                            ),
+                                            child: DropdownButton<int>(
+                                                value: _selectedItem1Index,
+                                                onChanged: (int? newIndex) {
+                                                    setState(() {
+                                                        _selectedItem1Index = newIndex;
+                                                    });
+                                                },
+                                                dropdownColor: Colors.white,
+                                                underline: const SizedBox(),
+                                                hint: const Text(' Select Breed               '),
+                                                items: const <DropdownMenuItem<int>>[
+                                                    DropdownMenuItem<int>(
+                                                        value: 0,
+                                                        child: const Text('Aspin'),
+                                                    ),
+                                                    DropdownMenuItem<int>(
+                                                        value: 1,
+                                                        child: const Text('Puspin'),
+                                                    ),
+                                                    DropdownMenuItem<int>(
+                                                        value: 2,
+                                                        child: const Text('Chihuahua'),
+                                                    ),
+                                                    DropdownMenuItem<int>(
+                                                        value: 3,
+                                                        child: const Text('Poodle'),
+                                                    ),
+                                                    DropdownMenuItem<int>(
+                                                        value: 4,
+                                                        child: const Text('Shih Tzu'),
+                                                    ),
+                                                    DropdownMenuItem<int>(
+                                                        value: 5,
+                                                        child: const Text('Persian Cat'),
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                        Container(
+                                            width: 170,
+                                            margin: const EdgeInsets.only(left: 10),
+                                            decoration: BoxDecoration(
+                                                border: Border.all(color: Colors.grey),
+                                                borderRadius: BorderRadius.circular(8.0),
+                                            ),
+                                            child: DropdownButton<int>(
+                                                value: _selectedItem2Index,
+                                                onChanged: (int? newIndex) {
+                                                    setState(() {
+                                                        _selectedItem2Index = newIndex;
+                                                    });
+                                                },
+                                                dropdownColor: Colors.white,
+                                                underline: const SizedBox(),
+                                                hint: const Text(' Select Color               '),
+                                                items: const <DropdownMenuItem<int>>[
+                                                    DropdownMenuItem<int>(
+                                                        value: 0,
+                                                        child: const Text('Solid'),
+                                                    ),
+                                                    DropdownMenuItem<int>(
+                                                        value: 1,
+                                                        child: const Text('Bi-Color'),
+                                                    ),
+                                                    DropdownMenuItem<int>(
+                                                        value: 2,
+                                                        child: const Text('Tri-color'),
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                                const SizedBox(height: 10),
+                                // Actions taken and condition selection
+                                Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                        Container(
+                                            width: 170,
+                                            margin: const EdgeInsets.only(right: 10),
+                                            decoration: BoxDecoration(
+                                                border: Border.all(color: Colors.grey),
+                                                borderRadius: BorderRadius.circular(8.0),
+                                            ),
+                                            child: DropdownButton<int>(
+                                                value: _selectedItem3Index,
+                                                onChanged: (int? newIndex) {
+                                                    setState(() {
+                                                        _selectedItem3Index = newIndex;
+                                                    });
+                                                },
+                                                dropdownColor: Colors.white,
+                                                underline: const SizedBox(),
+                                                hint: const Text('Actions Taken             '),
+                                                items: const <DropdownMenuItem<int>>[
+                                                    DropdownMenuItem<int>(
+                                                        value: 0,
+                                                        child: const Text('No Actions Taken'),
+                                                    ),
+                                                    DropdownMenuItem<int>(
+                                                        value: 1,
+                                                        child: const Text('Adopted'),
+                                                    ),
+                                                    DropdownMenuItem<int>(
+                                                        value: 2,
+                                                        child: const Text('Fostered'),
+                                                    ),
+                                                    DropdownMenuItem<int>(
+                                                        value: 3,
+                                                        child: const Text('Brought to Shelter'),
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                        Container(
+                                            width: 170,
+                                            margin: const EdgeInsets.only(left: 10),
+                                            decoration: BoxDecoration(
+                                                border: Border.all(color: Colors.grey),
+                                                borderRadius: BorderRadius.circular(8.0),
+                                            ),
+                                            child: DropdownButton<int>(
+                                                value: _selectedItem4Index,
+                                                onChanged: (int? newIndex) {
+                                                    setState(() {
+                                                        _selectedItem4Index = newIndex;
+                                                    });
+                                                },
+                                                dropdownColor: Colors.white,
+                                                underline: const SizedBox(),
+                                                hint: const Text('Condition                    '),
+                                                items: const <DropdownMenuItem<int>>[
+                                                    DropdownMenuItem<int>(
+                                                        value: 0,
+                                                        child: const Text('Injured'),
+                                                    ),
+                                                    DropdownMenuItem<int>(
+                                                        value: 1,
+                                                        child: const Text('Fine'),
+                                                    ),
+                                                ],
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                                const SizedBox(height: 25),
+                                // Text input for other details
+                                const SizedBox(
+                                    width: 350,
+                                    child: Padding(
+                                        padding: EdgeInsets.all(5.0),
+                                        child: TextField(
+                                            maxLines: null,
+                                            decoration: InputDecoration(
+                                                hintText: 'Other Details',
+                                                border: OutlineInputBorder(),
+                                                contentPadding: EdgeInsets.symmetric(vertical: 25.0),
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                                const SizedBox(height: 30),
+                                // Save button to save the data
+                                SizedBox(
+                                    width: 150,
+                                    child: ElevatedButton(
+                                        onPressed: _saveData,
+                                        child: const Text('Save'),
+                                    ),
+                                ),
+                            ],
+                        ),
+                    ],
+                ),
+            ),
+        );
+}
+}
+
+
+class MapScreen extends StatefulWidget {
+    final Function(LatLng) onLocationSelected; // Callback function to pass the selected location
+
+    const MapScreen({Key? key, required this.onLocationSelected}) : super(key: key);
+
+    @override
+    _SearchPageState createState() => _SearchPageState();
 }
 
 class _SearchPageState extends State<MapScreen> {
-  late GoogleMapController mapController;
-  final Set<Marker> _markers = {}; // Set to store markers
+    late GoogleMapController mapController;
+    final Set<Marker> _markers = {}; // Set to store markers
+    final LatLng _center = const LatLng(10.678245, 122.962325); // USLS
+    LatLng? _selectedLocation;
 
-  final LatLng _center = const LatLng(10.678245, 122.962325); // USLS
-  LatLng? _selectedLocation;
+    // Create an instance of DatabaseHelper (if needed)
+    final DatabaseHelper dbHelper = DatabaseHelper.instance;
 
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Map'),
-      ),
-      body: Stack(
-        children: [
-          // Google Maps widget
-          GoogleMap(
-            onMapCreated: _onMapCreated,
-            initialCameraPosition: CameraPosition(
-              target: _center,
-              zoom: 12.0,
+    @override
+    Widget build(BuildContext context) {
+        return Scaffold(
+            appBar: AppBar(
+                title: const Text('Map'),
             ),
-            markers: _markers,
-            onTap: _addMarker, 
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: ElevatedButton(
-                onPressed: _selectedLocation != null ? _saveLocation : null,
-                child: const Text('Save Location'),
-              ),
+            body: Stack(
+                children: [
+                    GoogleMap(
+                        onMapCreated: _onMapCreated,
+                        initialCameraPosition: CameraPosition(
+                            target: _center,
+                            zoom: 12.0,
+                        ),
+                        markers: _markers,
+                        onTap: _addMarker,
+                    ),
+                    Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: ElevatedButton(
+                                onPressed: _selectedLocation != null ? _saveLocation : null,
+                                child: const Text('Save Location'),
+                            ),
+                        ),
+                    ),
+                ],
             ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  void _onMapCreated(GoogleMapController controller) {
-    setState(() {
-      mapController = controller;
-    });
-  }
+        );
+    }
 
-  void _addMarker(LatLng position) {
-    setState(() {
-      _selectedLocation = position;
-      _markers.clear(); 
-      _markers.add(
-        Marker(
-          markerId: MarkerId(position.toString()),
-          position: position,
-          infoWindow: InfoWindow(
-            title: 'Selected Location',
-            snippet: 'Latitude: ${position.latitude}, Longitude: ${position.longitude}',
-          ),
-          icon: BitmapDescriptor.defaultMarker, 
-        ),
-      );
-    });
-  }
+    void _onMapCreated(GoogleMapController controller) {
+        setState(() {
+            mapController = controller;
+        });
+    }
+
+    void _addMarker(LatLng position) {
+        setState(() {
+            _selectedLocation = position;
+            _markers.clear();
+            _markers.add(
+                Marker(
+                    markerId: MarkerId(position.toString()),
+                    position: position,
+                    infoWindow: InfoWindow(
+                        title: 'Selected Location',
+                        snippet: 'Latitude: ${position.latitude}, Longitude: ${position.longitude}',
+                    ),
+                    icon: BitmapDescriptor.defaultMarker,
+                ),
+            );
+        });
+    }
+
+    // Function to save the selected location
+    Future<void> _saveLocation() async {
+        // Call the callback function to pass the selected location back to SecondRoute
+        if (_selectedLocation != null) {
+            widget.onLocationSelected(_selectedLocation!);
+            Navigator.pop(context); // Navigate back to SecondRoute
+        } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('No location selected.')),
+            );
+        }
+    }
 }
-void _saveLocation() {
-    //logic to save the selected location
-    //pass _selectedLocation to another screen or widget 
-    print('Location saved: $_SecondRouteState');
-  }

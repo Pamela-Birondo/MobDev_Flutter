@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 //import 'package:flutter/services.dart' show rootBundle;
 //import 'dart:convert';
@@ -60,15 +61,27 @@ class _FeedsPageState extends State<FeedsPage> {
   );
   }
 
-  List<Pet> _filterPets(List<Pet> pets, String query) {
-    // Filter pets based on the query
-    final filteredPets = pets.where((pet) {
-      return pet.breed.toLowerCase().contains(query.toLowerCase()) ||
-          pet.color.toLowerCase().contains(query.toLowerCase()) ||
-          pet.gender.toLowerCase().contains(query.toLowerCase()) ||
-          pet.postedBy.toLowerCase().contains(query.toLowerCase()) ||
-          pet.location.toLowerCase().contains(query.toLowerCase());
-    }).toList();
+  Future<List<Pet>> _filterPets(List<Pet> pets, String query) async {
+  // Create a list to store futures of location names
+  final List<Future<String>> locationNameFutures = [];
+
+  // Populate the list with futures of location names
+  for (final pet in pets) {
+    locationNameFutures.add(pet.getLocationName as Future<String>);
+  }
+
+  // Wait for all futures to complete
+  final List<String> locationNames = await Future.wait(locationNameFutures);
+
+  // Filter pets based on the query
+  final filteredPets = pets.where((pet) {
+    final locationName = locationNames[pets.indexOf(pet)];
+    return pet.breed.toLowerCase().contains(query.toLowerCase()) ||
+        pet.color.toLowerCase().contains(query.toLowerCase()) ||
+        pet.gender.toLowerCase().contains(query.toLowerCase()) ||
+        pet.postedBy.toLowerCase().contains(query.toLowerCase()) ||
+        locationName.toLowerCase().contains(query.toLowerCase());
+  }).toList();
 
     // Further filter based on the selected feed
     return filteredPets.where((pet) {
@@ -194,7 +207,7 @@ Future<List<Pet>> _loadNotRescuedPets() async {
   }
 }
 
-class InformationCard extends StatelessWidget {
+class InformationCard extends StatefulWidget {
   final double width;
   final Pet pet;
 
@@ -205,6 +218,20 @@ class InformationCard extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _InformationCardState createState() => _InformationCardState();
+}
+
+class _InformationCardState extends State<InformationCard> {
+  late Future<String> _locationNameFuture;
+
+ @override
+void initState() {
+  super.initState();
+  LatLng petLocation = LatLng(widget.pet.locationLat, widget.pet.locationLng);
+  _locationNameFuture = widget.pet.getLocationName(petLocation);
+}
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
@@ -212,21 +239,21 @@ class InformationCard extends StatelessWidget {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Stray Information'),
+              title: const Text('Stray Information'),
               content: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Image.file(
-                      File(pet.images),
+                      File(widget.pet.images),
                       width: 400,
                       height: 300,
                       fit: BoxFit.cover,
                     ),
-                    SizedBox(height: 10),
-                    _buildCardItem('Posted by', pet.postedBy, 150.0),
-                    SizedBox(height: 1),
+                    const SizedBox(height: 10),
+                    _buildCardItem('Posted by', widget.pet.postedBy, 150.0),
+                    const SizedBox(height: 1),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -236,10 +263,21 @@ class InformationCard extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildCardItem('Date', pet.date, 150.0),
-                                _buildCardItem('Location', pet.location, 150.0),
-                                _buildCardItem('Breed', pet.breed, 150.0),
-                                _buildCardItem('Gender', pet.gender, 150.0),
+                                _buildCardItem('Date', widget.pet.date, 150.0),
+                                FutureBuilder<String>(
+                                  future: _locationNameFuture,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return _buildCardItem('Location', 'Loading...', 150.0);
+                                    } else if (snapshot.hasError) {
+                                      return _buildCardItem('Location', 'Error', 150.0);
+                                    } else {
+                                      return _buildCardItem('Location', snapshot.data!, 150.0);
+                                    }
+                                  },
+                                ),
+                                _buildCardItem('Breed', widget.pet.breed, 150.0),
+                                _buildCardItem('Gender', widget.pet.gender, 150.0),
                               ],
                             ),
                           ),
@@ -250,22 +288,22 @@ class InformationCard extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _buildCardItem('Size', pet.size, 150.0),
-                                _buildCardItem('Color', pet.color, 150.0),
-                                _buildCardItem('Actions Taken', pet.actionTaken, 150.0),
-                                _buildCardItem('Condition', pet.condition, 150.0),
+                                _buildCardItem('Size', widget.pet.size, 150.0),
+                                _buildCardItem('Color', widget.pet.color, 150.0),
+                                _buildCardItem('Actions Taken', widget.pet.actionTaken, 150.0),
+                                _buildCardItem('Condition', widget.pet.condition, 150.0),
                               ],
                             ),
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 5),
-                    Text(
+                    const SizedBox(height: 5),
+                    const Text(
                       'Comments:',
                       style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,16 +311,16 @@ class InformationCard extends StatelessWidget {
                           ListTile(
                             leading: CircleAvatar(
                               backgroundColor: Colors.grey,
-                              child: Icon(Icons.person),
+                              child: const Icon(Icons.person),
                             ),
-                            title: Text('Ella'),
+                            title: const Text('Ella'),
                             subtitle: Container(
-                              padding: EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(8.0),
                               decoration: BoxDecoration(
                                 color: const Color.fromARGB(255, 131, 131, 131),
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
-                              child: Text(
+                              child: const Text(
                                 'Going...',
                                 style: TextStyle(color: Colors.white),
                               ),
@@ -291,16 +329,16 @@ class InformationCard extends StatelessWidget {
                           ListTile(
                             leading: CircleAvatar(
                               backgroundColor: Colors.grey,
-                              child: Icon(Icons.person),
+                              child: const Icon(Icons.person),
                             ),
-                            title: Text('Jia'),
+                            title: const Text('Jia'),
                             subtitle: Container(
-                              padding: EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(8.0),
                               decoration: BoxDecoration(
                                 color: const Color.fromARGB(255, 131, 131, 131),
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
-                              child: Text(
+                              child: const Text(
                                 'Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum',
                                 style: TextStyle(color: Colors.white),
                               ),
@@ -309,37 +347,35 @@ class InformationCard extends StatelessWidget {
                           ListTile(
                             leading: CircleAvatar(
                               backgroundColor: Colors.grey,
-                              child: Icon(Icons.person),
+                              child: const Icon(Icons.person),
                             ),
-                            title: Text('Casandra'),
+                            title: const Text('Casandra'),
                             subtitle: Container(
-                              padding: EdgeInsets.all(8.0),
+                              padding: const EdgeInsets.all(8.0),
                               decoration: BoxDecoration(
                                 color: const Color.fromARGB(255, 131, 131, 131),
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
-                              child: Text(
+                              child: const Text(
                                 'Comment.',
                                 style: TextStyle(color: Colors.white),
                               ),
                             ),
                           ),
-                          // Add comments 
                         ],
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8.0),
                             child: TextField(
-                              decoration: InputDecoration(
+                              decoration: const InputDecoration(
                                 hintText: 'Type your comment here...',
                                 border: OutlineInputBorder(),
                               ),
-                              // Add controller or onChanged handler as needed
                             ),
                           ),
                         ),
@@ -347,7 +383,7 @@ class InformationCard extends StatelessWidget {
                           onPressed: () {
                             // functionality here
                           },
-                          child: Text('Post'),
+                          child: const Text('Post'),
                         ),
                       ],
                     ),
@@ -357,9 +393,9 @@ class InformationCard extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop(); 
+                    Navigator.of(context).pop();
                   },
-                  child: Text('Close'),
+                  child: const Text('Close'),
                 ),
               ],
             );
@@ -367,14 +403,14 @@ class InformationCard extends StatelessWidget {
         );
       },
       child: SizedBox(
-        width: width,
+        width: widget.width,
         child: Card(
           margin: const EdgeInsets.all(10.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Image.file(
-                File(pet.images),
+                File(widget.pet.images),
                 width: double.infinity,
                 height: 300,
                 fit: BoxFit.cover,
@@ -388,8 +424,19 @@ class InformationCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildCardItem('Date', pet.date, 200.0),
-                          _buildCardItem('Location', pet.location, 200.0),
+                          _buildCardItem('Date', widget.pet.date, 200.0),
+                          FutureBuilder<String>(
+                            future: _locationNameFuture,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return _buildCardItem('Location', 'Loading...', 200.0);
+                              } else if (snapshot.hasError) {
+                                return _buildCardItem('Location', 'Error', 200.0);
+                              } else {
+                                return _buildCardItem('Location', snapshot.data!, 200.0);
+                              }
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -400,8 +447,8 @@ class InformationCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildCardItem('Breed', pet.breed, 200.0),
-                          _buildCardItem('Gender', pet.gender, 200.0),
+                          _buildCardItem('Breed', widget.pet.breed, 200.0),
+                          _buildCardItem('Gender', widget.pet.gender, 200.0),
                         ],
                       ),
                     ),
@@ -420,71 +467,34 @@ class InformationCard extends StatelessWidget {
     if (value is DateTime) {
       displayValue = DateFormat.yMMMMd().format(value);
     }
-    if (title == 'Posted by') {
-      return Row(
+    return Container(
+      width: itemWidth,
+      margin: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 12.0),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 234, 184, 87),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            backgroundColor: const Color.fromARGB(255, 158, 158, 158),
-            child: Icon(Icons.person),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16.0,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
           ),
-          SizedBox(width: 8.0),
-          SizedBox(
-            width: itemWidth - 48.0, // Adjusted width considering CircleAvatar and SizedBox
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                Text(
-                  displayValue,
-                  style: TextStyle(
-                    fontSize: 14.0,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
+          Text(
+            displayValue,
+            style: const TextStyle(
+              fontSize: 14.0,
+              color: Colors.black,
             ),
           ),
         ],
-      );
-    } else {
-      return SizedBox(
-        width: itemWidth,
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 12.0),
-          margin: EdgeInsets.only(bottom: 8.0),
-          decoration: BoxDecoration(
-            color: Color.fromARGB(255, 234, 184, 87),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-              Text(
-                displayValue,
-                style: TextStyle(
-                  fontSize: 14.0,
-                  color: Colors.black,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+      ),
+    );
   }
 }

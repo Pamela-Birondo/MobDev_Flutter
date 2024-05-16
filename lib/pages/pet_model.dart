@@ -12,7 +12,8 @@ class Pet {
   final String actionTaken;
   final String condition;
   final String details;
-  final String location;
+  final double locationLat; // Latitude attribute
+  final double locationLng; // Longitude attribute
   final String postedBy;
   final bool isRescued;
 
@@ -27,14 +28,14 @@ class Pet {
     required this.actionTaken,
     required this.condition,
     required this.details,
-    required this.location,
+    required this.locationLat,
+    required this.locationLng,
     required this.postedBy,
     required this.isRescued,
   });
 
-  Future<String> getLocationName() async {
+  Future<String> getLocationName(LatLng latLng) async {
     try {
-      final latLng = _parseLocation(location);
       List<Placemark> placemarks = await placemarkFromCoordinates(latLng.latitude, latLng.longitude);
       if (placemarks.isNotEmpty) {
         return placemarks.first.locality ?? 'Unknown location';
@@ -45,13 +46,6 @@ class Pet {
       print('Error performing reverse geocoding: $e');
       return 'Unknown location';
     }
-  }
-
-  LatLng _parseLocation(String location) {
-    final parts = location.split(',');
-    final latitude = double.parse(parts[0]);
-    final longitude = double.parse(parts[1]);
-    return LatLng(latitude, longitude);
   }
 
   factory Pet.fromMap(Map<String, dynamic> map) {
@@ -72,7 +66,8 @@ class Pet {
       actionTaken: map['actionTaken'] ?? '',
       condition: map['condition'] ?? '',
       details: map['details'] ?? '',
-      location: map['location'] ?? '',
+      locationLat: map['locationLat'],
+      locationLng: map['locationLng'],
       postedBy: map['postedBy'] ?? '',
       isRescued: map['isRescued'] == 1,
     );

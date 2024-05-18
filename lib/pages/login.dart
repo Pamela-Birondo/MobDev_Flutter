@@ -5,6 +5,7 @@ import 'Database_helper.dart'; // Import the DatabaseHelper class
 import 'package:image_picker/image_picker.dart'; // Import the image_picker package
 import 'dart:io'; // Import for handling File objects
 import 'package:shared_preferences/shared_preferences.dart';
+import 'org_signUp.dart';
 
 
 class LoginPage extends StatefulWidget {
@@ -23,47 +24,9 @@ class _LoginPageState extends State<LoginPage> {
     final dbHelper = DatabaseHelper.instance;
 
     // Function to validate the user's credentials
-    Future<bool> validateUser(String email, String password) async {
+    Future<Map<String, dynamic>> validateUser(String email, String password) async {
         return await dbHelper.validateUser(email, password);
     }
-
-  /*  Future<void> loginUser(BuildContext context, String email, String password) async {
-    print('loginUser called with email: $email, password: $password'); // Debug statement
-
-    // Query the user's data from the database based on email
-    Map<String, dynamic>? userData = await dbHelper.getUserByEmail(email);
-
-    print('Queried user data: $userData'); // Debug statement
-
-    if (userData != null) {
-        // Retrieve the stored password and compare with the provided password
-        String storedPassword = userData['password'];
-        print('Stored password: $storedPassword'); // Debug statement
-
-        // Compare the provided password with the stored password
-        if (password == storedPassword) {
-            // Authentication successful, retrieve userId
-            int userId = userData['id'];
-            print('Authentication successful, userId: $userId'); // Debug statement
-
-            // Save the userId to SharedPreferences
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setInt('userId', userId);
-            print('Stored userId in SharedPreferences: $userId'); // Debug statement
-
-            // Navigate to NavigationPage after successful login
-            Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const NavigationPage()),
-            );
-            return;
-        }
-    }
-    // Authentication failed
-    print('Authentication failed'); // Debug statement
-}*/
-
-
     
 
     @override
@@ -125,66 +88,96 @@ class _LoginPageState extends State<LoginPage> {
                                 const SizedBox(height: 16.0),
                                 // Login button
                                 SizedBox(
-                                    width: 320,
-                                    child: ElevatedButton(
-                                       onPressed: () async {
-    // Get the email and password from the controllers
-    String email = emailController.text;
-    String password = passwordController.text;
+  width: 320,
+  child: ElevatedButton(
+    onPressed: () async {
+      // Get the email and password from the controllers
+      String email = emailController.text;
+      String password = passwordController.text;
 
-    // Debugging: Check the values of email and password
-    print('Attempting to validate user with email: $email and password: [hidden]');
+      // Debugging: Check the values of email and password
+      print('Attempting to validate user with email: $email and password: [hidden]');
 
-    // Create an instance of DatabaseHelper
-    final dbHelper = DatabaseHelper.instance;
+      // Create an instance of DatabaseHelper
+      final dbHelper = DatabaseHelper.instance;
 
-    // Validate user credentials using dbHelper
-    bool isValid = await dbHelper.validateUser(email, password);
+      // Validate user credentials using dbHelper
+      Map<String, dynamic> userData = await dbHelper.validateUser(email, password);
+      bool isValid = userData.isNotEmpty;
 
-    // Debugging: Check the result of the validation
-    print('Validation result: $isValid');
+      // Debugging: Check the result of the validation
+      print('Validation result: $isValid');
 
-    // Proceed based on the validation result
-    if (isValid) {
-        // If the credentials are valid, navigate to the NavigationPage
-        Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const NavigationPage()),
-        );
-    } else {
+      // Proceed based on the validation result
+      if (isValid) {
+        // Extract the user role from the userData
+        bool isAdmin = userData['isAdmin'];
+
+        // If the user is an admin, navigate to the Admin Dashboard
+        if (isAdmin) {
+          Navigator.pushNamed(context, '/admin_home');
+        } else {
+          // If the user is not an admin, navigate to the regular user navigation page
+          Navigator.pushNamed(context, '/navigation');
+        }
+      } else {
         // If the credentials are invalid, show an error message
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Invalid email or password')),
+          const SnackBar(content: Text('Invalid email or password')),
         );
-    }
-},
+      }
+    },
+    child: const Text('Login'),
+  ),
+),
 
-                                        child: const Text('Login'),
-                                    ),
-                                ),
                                 const SizedBox(height: 8.0),
                                 const Text(
-                                    "Don't have an account?",
+                                    "Don't have an account? Sign up",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(color: Colors.grey),
                                 ),
-                                InkWell(
-                                    onTap: () {
-                                        // Navigate to the sign-up page
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(builder: (context) => const SignUpPage()),
-                                        );
-                                    },
-                                    child: const Text(
-                                        'Sign up',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                            color: Color.fromARGB(255, 143, 43, 129),
-                                            decoration: TextDecoration.none,
-                                        ),
-                                    ),
-                                ),
+                                Row(
+  mainAxisAlignment: MainAxisAlignment.center, // Center the row contents
+  children: [
+    InkWell(
+      onTap: () {
+        // Navigate to the sign-up page
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SignUpPage()),
+        );
+      },
+      child: const Text(
+        'User' '   |',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Color.fromARGB(255, 143, 43, 129),
+          decoration: TextDecoration.none,
+        ),
+      ),
+    ),
+    const SizedBox(width: 8.0), // Add spacing between the two InkWell widgets
+    InkWell(
+      onTap: () {
+        // Handle the action for the second InkWell here
+        // For example, navigate to a 'Forgot Password' page
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const OrgSignUp()),
+        );
+      },
+      child: const Text(
+        'Organization',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Color.fromARGB(255, 143, 43, 129),
+          decoration: TextDecoration.none,
+        ),
+      ),
+    ),
+  ],
+)
                             ],
                         ),
                     ),
@@ -336,6 +329,10 @@ class _SignUpPageState extends State<SignUpPage> {
                                             if (passwordController.text == confirmPasswordController.text) {
                                                 await insertUserData();
                                                 // Navigate to the next page (update this with your next page navigation logic)
+                                                Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const NavigationPage()),
+        );
                                             } else {
                                                 // Show error message if passwords don't match
                                                 ScaffoldMessenger.of(context).showSnackBar(

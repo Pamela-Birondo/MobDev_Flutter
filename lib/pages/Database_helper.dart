@@ -8,6 +8,7 @@ class DatabaseHelper {
 
     static final tableUser = 'user';
     static final tableStray = 'stray';
+    static final tableOrg = 'org';
 
     static Database? _database;
 
@@ -35,34 +36,33 @@ class DatabaseHelper {
     }
 
 Future<Map<String, dynamic>?> getUserByEmail(String email) async {
-    try {
-        // Debug: Print received email
-        print('Received email in getUserByEmail: $email');
+  try {
+    // Debug: Print received email
+    print('Received email in getUserByEmail: $email');
 
-        // Obtain the database instance
-        final db = await database;
+    // Obtain the database instance
+    final db = await database;
 
-        // Perform a case-insensitive query
-        List<Map<String, dynamic>> results = await db.query(
-            tableUser,
-            where: 'LOWER(email) = LOWER(?)',
-            whereArgs: [email],
-        );
+    // Perform a raw SQL query
+    List<Map<String, dynamic>> results = await db.rawQuery(
+      'SELECT * FROM $tableUser WHERE LOWER(email) = LOWER(?)',
+      [email],
+    );
 
-        // Debug: Print query results
-        print('Query results for email: $email: $results');
+    // Debug: Print query results
+    print('Query results for email: $email: $results');
 
-        // Return the first user record if found
-        if (results.isNotEmpty) {
-            return results.first;
-        }
-
-        print('No user found with email: $email');
-        return null;
-    } catch (error) {
-        print('Error querying user by email: $error');
-        return null;
+    // Return the first user record if found
+    if (results.isNotEmpty) {
+      return results.first;
     }
+
+    print('No user found with email: $email');
+    return null;
+  } catch (error) {
+    print('Error querying user by email: $error');
+    return null;
+  }
 }
 
 
@@ -71,6 +71,7 @@ Future<Map<String, dynamic>?> getUserByEmail(String email) async {
         print('Creating tables...');
         await _createUserTable(db);
         await _createStrayTable(db);
+        await _createOrgTable(db);
         print('Tables created.');
     }
 
@@ -90,8 +91,24 @@ Future<Map<String, dynamic>?> getUserByEmail(String email) async {
         print('User table created.');
     }
 
+    Future<void> _createOrgTable(Database db) async {
+        await db.execute('''
+            CREATE TABLE $tableOrg (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT,
+                username TEXT,
+                email TEXT,
+                phone TEXT,
+                password TEXT,
+                profileImage TEXT, -- New column for profile image
+                address TEXT -- New column for address
+            )
+        ''');
+        print('Org table created.');
+    }
+
     Future<void> _createStrayTable(Database db) async {
-  await db.execute('''
+    await db.execute('''
       CREATE TABLE $tableStray (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           images TEXT,
@@ -106,11 +123,44 @@ Future<Map<String, dynamic>?> getUserByEmail(String email) async {
           locationLat REAL,
           locationLng REAL,
           isRescued INTEGER, -- Add the isRescued column
+          reported INTEGER DEFAULT 0, -- Add the reported column with default value 0
           postedBy TEXT
       )
-  ''');
-  print('Stray table created.');
-}
+    ''');
+    print('Stray table created.');
+  }
+
+  Future<void> reportPost(int id) async {
+    try {
+      final db = await database;
+      await db.update(
+        tableStray,
+        {'reported': 1}, // Mark the post as reported
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+      print('Post with ID $id reported.');
+    } catch (error) {
+      print('Error reporting post: $error');
+      // Handle error
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getReportedPosts() async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> results = await db.query(
+        tableStray,
+        where: 'reported = ?',
+        whereArgs: [1], // Fetch posts that are reported
+      );
+      print('Reported posts: $results');
+      return results;
+    } catch (error) {
+      print('Error fetching reported posts: $error');
+      return [];
+    }
+  }
 
     Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
         // Check if the schema needs to be updated
@@ -127,6 +177,30 @@ Future<Map<String, dynamic>?> getUserByEmail(String email) async {
             print('User table upgraded.');
         }
     }
+
+    //org operations
+    Future<int> insertOrgData(Map<String, dynamic> org) async {
+        final db = await database;
+        return await db.insert(tableOrg, org);
+    }
+    Future<Map<String, dynamic>?> getOrgById(int id) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+        tableOrg,
+        where: 'id = ?',
+        whereArgs: [id],
+    );
+
+    // Debugging: Print the query results and other information
+    print('Querying user by id: $id');
+    print('Results: $results');
+
+    if (results.isNotEmpty) {
+        return results.first;
+    }
+    return null;
+}
+
 
     // User operations
     Future<int> insertUser(Map<String, dynamic> user) async {
@@ -158,8 +232,6 @@ Future<Map<String, dynamic>?> getUserById(int id) async {
 }
 
 
-
-
     Future<int> updateUser(int id, Map<String, dynamic> user) async {
         final db = await database;
         return await db.update(
@@ -180,18 +252,39 @@ Future<Map<String, dynamic>?> getUserById(int id) async {
     }
 
     // User validation
-Future<bool> validateUser(String email, String password) async {
-    final db = await database; // Ensure you have the database instance
+Future<Map<String, dynamic>> validateUser(String email, String password) async {
+  final db = await database; // Ensure you have the database instance
 
-    List<Map<String, dynamic>> results = await db.query(
-        tableUser,
-        where: 'email = ? AND password = ?',
-        whereArgs: [email, password],
-    );
+  // Query the user table
+  List<Map<String, dynamic>> userResults = await db.query(
+    tableUser,
+    where: 'email = ? AND password = ?',
+    whereArgs: [email, password],
+  );
 
-    // Return true if results are not empty (meaning the user exists)
-    return results.isNotEmpty;
+  // Query the org table
+  List<Map<String, dynamic>> orgResults = await db.query(
+    tableOrg,
+    where: 'email = ? AND password = ?',
+    whereArgs: [email, password],
+  );
+
+  // Check if the user exists in the user table
+  if (userResults.isNotEmpty) {
+    // User found in user table
+    return {'email': email, 'isAdmin': false}; // User is not admin if found in user table
+  }
+
+  // Check if the user exists in the org table
+  if (orgResults.isNotEmpty) {
+    // User found in org table
+    return {'email': email, 'isAdmin': true}; // User is admin if found in org table
+  }
+
+  // If no user is found in either table, return an empty map
+  return {};
 }
+
 
 
 

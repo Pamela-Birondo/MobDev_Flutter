@@ -231,34 +231,15 @@ class _InformationCardState extends State<InformationCard> {
     _locationNameFuture = widget.pet.getLocationName(petLocation);
   }
 
-@override
-Widget build(BuildContext context) {
-  return GestureDetector(
-    onTap: () {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Stray Information',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                IconButton(
-  icon: Icon(
-    Icons.flag,
-    color: const Color.fromARGB(255, 207, 14, 0), // Set the color of the flag icon
-  ),
-  onPressed: () {
-    // Call function to report the post
-    reportPost(widget.pet.id);
-  },
-),
-              ],
-            ),
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Stray Information'),
               content: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -581,17 +562,7 @@ Widget build(BuildContext context) {
     // You might want to notify the user that an error occurred
   }
 }
-void reportPost(int postId) async {
-  try {
-    // Update the post's status to indicate it has been reported
-    await DatabaseHelper.instance.reportPost(postId);
-    // Optionally, you can show a message to the user indicating that the post has been reported
-  } catch (error) {
-    // Handle any errors that occur during reporting
-    print('Error reporting post: $error');
-    // Optionally, show an error message to the user
-  }
-}
+
 
   // Other widget code
 }

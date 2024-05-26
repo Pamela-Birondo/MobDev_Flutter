@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_paw_rescuer/pages/admin_home.dart';
 import 'package:flutter_paw_rescuer/pages/home.dart';
@@ -6,6 +8,7 @@ import 'Database_helper.dart'; // Import the DatabaseHelper class
 import 'package:image_picker/image_picker.dart'; // Import the image_picker package
 import 'dart:io'; // Import for handling File objects
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class OrgSignUp extends StatefulWidget {
     const OrgSignUp({Key? key}) : super(key: key);
@@ -44,32 +47,40 @@ class _OrgSignUpPage extends State<OrgSignUp> {
 
     // Function to insert user data
     Future<void> insertOrgData() async {
-        try {
-            // Create a map to hold user data
-            Map<String, dynamic> userData = {
-                'name': nameController.text,
-                'username': usernameController.text,
-                'email': emailController.text,
-                'phone': phoneController.text,
-                'password': passwordController.text,
-                'profileImage': _profileImage?.path, // Add the profile image path if chosen
-                'address': addressController.text,
-            };
+    try {
+      Map<String, dynamic> userData = {
+        'name': nameController.text,
+        'username': usernameController.text,
+        'email': emailController.text,
+        'phone': phoneController.text,
+        'password': passwordController.text,
+        'address': addressController.text,
+      };
 
-            // Insert the user data into the database
-            int id = await dbHelper.insertOrgData(userData);
-            print('User inserted with ID: $id');
+      if (_profileImage != null) {
+        List<int> imageBytes = await _profileImage!.readAsBytes();
+        String base64Image = base64Encode(imageBytes);
+        userData['profileImage'] = base64Image;
+      }
 
-            // Navigate to HomePage after successful insertion
+      final response = await http.post(
+        Uri.parse('https://petrescuer.000webhostapp.com/add_org.php'),
+        body: userData,
+      );
+
+      if (response.statusCode == 200) {
+        print('User inserted successfully');
         Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => adminhomePage()), // Replace `HomePage()` with the correct import for your HomePage
+          context,
+          MaterialPageRoute(builder: (context) => const AdminNavigationPage()),
         );
-
-        } catch (e) {
-            print('Error inserting user data: $e');
-        }
+      } else {
+        print('HTTP error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error inserting user data: $e');
     }
+  }
 
     @override
     Widget build(BuildContext context) {

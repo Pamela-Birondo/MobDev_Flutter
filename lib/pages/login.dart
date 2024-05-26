@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_paw_rescuer/pages/home.dart';
 import 'navigation.dart'; // Import the navigation page file
@@ -6,6 +7,7 @@ import 'package:image_picker/image_picker.dart'; // Import the image_picker pack
 import 'dart:io'; // Import for handling File objects
 import 'package:shared_preferences/shared_preferences.dart';
 import 'org_signUp.dart';
+import 'package:http/http.dart' as http;
 
 
 class LoginPage extends StatefulWidget {
@@ -195,30 +197,24 @@ class _LoginPageState extends State<LoginPage> {
     }
 }
 class SignUpPage extends StatefulWidget {
-    const SignUpPage({Key? key}) : super(key: key);
+  const SignUpPage({Key? key}) : super(key: key);
 
-    @override
-    _SignUpPageState createState() => _SignUpPageState();
+  @override
+  _SignUpPageState createState() => _SignUpPageState();
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-    // Controllers to capture user inputs
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController usernameController = TextEditingController();
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController phoneController = TextEditingController();
-    final TextEditingController passwordController = TextEditingController();
-    final TextEditingController confirmPasswordController = TextEditingController();
-    final TextEditingController addressController = TextEditingController(); // Controller for address field
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  File? _profileImage;
 
-    // File to hold the profile image
-    File? _profileImage;
-
-    // Create an instance of DatabaseHelper
-    final dbHelper = DatabaseHelper.instance;
-
-    // Function to pick an image from the gallery
-    Future<void> _pickImage() async {
+  Future<void> _pickImage() async {
         final ImagePicker picker = ImagePicker();
         final XFile? pickedImage = await picker.pickImage(source: ImageSource.gallery);
 
@@ -229,36 +225,43 @@ class _SignUpPageState extends State<SignUpPage> {
         }
     }
 
-    // Function to insert user data
-    Future<void> insertUserData() async {
-        try {
-            // Create a map to hold user data
-            Map<String, dynamic> userData = {
-                'name': nameController.text,
-                'username': usernameController.text,
-                'email': emailController.text,
-                'phone': phoneController.text,
-                'password': passwordController.text,
-                'profileImage': _profileImage?.path, // Add the profile image path if chosen
-                'address': addressController.text,
-            };
+  Future<void> insertUserData() async {
+    try {
+      Map<String, dynamic> userData = {
+        'name': nameController.text,
+        'username': usernameController.text,
+        'email': emailController.text,
+        'phone': phoneController.text,
+        'password': passwordController.text,
+        'address': addressController.text,
+      };
 
-            // Insert the user data into the database
-            int id = await dbHelper.insertUser(userData);
-            print('User inserted with ID: $id');
+      if (_profileImage != null) {
+        List<int> imageBytes = await _profileImage!.readAsBytes();
+        String base64Image = base64Encode(imageBytes);
+        userData['profileImage'] = base64Image;
+      }
 
-            // Navigate to HomePage after successful insertion
+      final response = await http.post(
+        Uri.parse('https://petrescuer.000webhostapp.com/add_user.php'),
+        body: userData,
+      );
+
+      if (response.statusCode == 200) {
+        print('User inserted successfully');
         Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => homePage()), // Replace `HomePage()` with the correct import for your HomePage
+          context,
+          MaterialPageRoute(builder: (context) => const NavigationPage()),
         );
-
-        } catch (e) {
-            print('Error inserting user data: $e');
-        }
+      } else {
+        print('HTTP error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error inserting user data: $e');
     }
+  }
 
-    @override
+   @override
     Widget build(BuildContext context) {
         return Scaffold(
             appBar: AppBar(
@@ -351,18 +354,17 @@ class _SignUpPageState extends State<SignUpPage> {
         );
     }
 
-    @override
-    void dispose() {
-        // Dispose of text controllers when the widget is disposed
-        nameController.dispose();
-        usernameController.dispose();
-        emailController.dispose();
-        phoneController.dispose();
-        passwordController.dispose();
-        confirmPasswordController.dispose();
-        addressController.dispose();
-        super.dispose();
-    }
+  @override
+  void dispose() {
+    nameController.dispose();
+    usernameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    addressController.dispose();
+    super.dispose();
+  }
 }
 
 class ItemProfileTextField extends StatelessWidget {

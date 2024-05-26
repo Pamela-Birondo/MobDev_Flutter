@@ -105,6 +105,7 @@ class _SecondRouteState extends State<SecondRoute> {
     int? _selectedItem3Index;
     int? _selectedItem4Index;
     LatLng? _selectedLocation; // Declare the selected location
+    final TextEditingController _detailsController = TextEditingController(); // Add a TextEditingController
 
     // Create an instance of DatabaseHelper
     final DatabaseHelper dbHelper = DatabaseHelper.instance;
@@ -152,7 +153,7 @@ Future<void> _saveData() async {
         [_selectedItem3Index ?? 0];
     String condition = ['Injured', 'Fine'][_selectedItem4Index ?? 0];
     // Retrieve other details from a text input
-    String details = '';
+     String details = _detailsController.text; // Get the details from the TextEditingController
     // Determine if the pet is rescued based on actionTaken
     int isRescued = actionTaken != 'No Actions Taken' ? 1 : 0;
 
@@ -259,30 +260,22 @@ Future<void> _saveData() async {
                     children: <Widget>[
                         // Image grid for images
                         SizedBox(
-                            height: 290, // Adjust the height as needed
-                            child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
-                                child: Container(
-                                    decoration: BoxDecoration(
-                                        border: Border.all(color: Color.fromARGB(255, 19, 19, 19)),
-                                    ),
-                                    child: GridView.builder(
-                                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: 3,
-                                            crossAxisSpacing: 4.0,
-                                            mainAxisSpacing: 4.0,
-                                        ),
-                                        itemCount: _images.length,
-                                        itemBuilder: (BuildContext context, int index) {
-                                            return Image.file(
-                                                File(_images[index].path),
-                                                fit: BoxFit.cover,
-                                            );
-                                        },
-                                    ),
-                                ),
-                            ),
-                        ),
+  height: 290, // Adjust the height as needed
+  child: Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+    child: Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Color.fromARGB(255, 19, 19, 19)),
+      ),
+      child: _images.isNotEmpty // Check if _images list is not empty
+          ? Image.file(
+              File(_images.first.path), // Display the first image in the list
+              fit: BoxFit.cover,
+            )
+          : Container(), // Use Container as a placeholder if _images list is empty
+    ),
+  ),
+),
                         // Icon buttons for image selection, map navigation, and date selection
                         Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -579,20 +572,20 @@ Future<void> _saveData() async {
                                 ),
                                 const SizedBox(height: 25),
                                 // Text input for other details
-                                const SizedBox(
-                                    width: 350,
-                                    child: Padding(
-                                        padding: EdgeInsets.all(5.0),
-                                        child: TextField(
-                                            maxLines: null,
-                                            decoration: InputDecoration(
-                                                hintText: 'Other Details',
-                                                border: OutlineInputBorder(),
-                                                contentPadding: EdgeInsets.symmetric(vertical: 25.0),
-                                            ),
-                                        ),
-                                    ),
-                                ),
+                                SizedBox(
+  width: 350,
+  child: Padding(
+    padding: const EdgeInsets.all(5.0),
+    child: TextField(
+      controller: _detailsController,
+      maxLines: null,
+      decoration: InputDecoration(
+        labelText: 'Other Details',
+        border: OutlineInputBorder(),
+      ),
+    ),
+  ),
+),
                                 const SizedBox(height: 30),
                                 // Save button to save the data
                                 SizedBox(

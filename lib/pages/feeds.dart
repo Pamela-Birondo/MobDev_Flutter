@@ -248,251 +248,276 @@ Widget build(BuildContext context) {
                   ),
                 ),
                 IconButton(
-  icon: Icon(
-    Icons.flag,
-    color: const Color.fromARGB(255, 207, 14, 0), // Set the color of the flag icon
-  ),
-  onPressed: () {
-    // Call function to report the post
-    reportPost(widget.pet.id);
-  },
-),
+                  icon: Icon(
+                    Icons.flag,
+                    color: const Color.fromARGB(255, 207, 14, 0),
+                  ),
+                  onPressed: () {
+                    reportPost(widget.pet.id);
+                  },
+                ),
               ],
             ),
-              content: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.file(
-                      File(widget.pet.images),
-                      width: 400,
-                      height: 300,
-                      fit: BoxFit.cover,
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildCardItem('Posted by', 'Pam', 150.0),
-                        IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () {
-                            // Show delete confirmation dialog and pass the ID
-                            showDeleteConfirmationDialog(context, widget.pet.id);
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 1),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildCardItem('Date', widget.pet.date, 150.0),
-                                FutureBuilder<String>(
-                                  future: _locationNameFuture,
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return _buildCardItem('Location', 'Loading...', 150.0);
-                                    } else if (snapshot.hasError) {
-                                      return _buildCardItem('Location', 'Error', 150.0);
-                                    } else {
-                                      return _buildCardItem('Location', snapshot.data!, 150.0);
-                                    }
-                                  },
-                                ),
-                                _buildCardItem('Breed', widget.pet.breed, 150.0),
-                                _buildCardItem('Gender', widget.pet.gender, 150.0),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(5.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildCardItem('Size', widget.pet.size, 150.0),
-                                _buildCardItem('Color', widget.pet.color, 150.0),
-                                _buildCardItem('Actions Taken', widget.pet.actionTaken, 150.0),
-                                _buildCardItem('Condition', widget.pet.condition, 150.0),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 5),
-                    const Text(
-                      'Comments:',
-                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 5),
-                    SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.grey,
-                              child: const Icon(Icons.person),
-                            ),
-                            title: const Text('Ella'),
-                            subtitle: Container(
-                              padding: const EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 131, 131, 131),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: const Text(
-                                'Going...',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                          ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.grey,
-                              child: const Icon(Icons.person),
-                            ),
-                            title: const Text('Jia'),
-                            subtitle: Container(
-                              padding: const EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 131, 131, 131),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: const Text(
-                                'Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                          ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.grey,
-                              child: const Icon(Icons.person),
-                            ),
-                            title: const Text('Casandra'),
-                            subtitle: Container(
-                              padding: const EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                color: const Color.fromARGB(255, 131, 131, 131),
-                                borderRadius: BorderRadius.circular(8.0),
-                              ),
-                              child: const Text(
-                                'Comment.',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: TextField(
-                              decoration: const InputDecoration(
-                                hintText: 'Type your comment here...',
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            // functionality here
-// functionality here
-                          },
-                          child: const Text('Post'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Close'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-      child: SizedBox(
-        width: widget.width,
-        child: Card(
-          margin: const EdgeInsets.all(10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Image.file(
-                File(widget.pet.images),
-                width: double.infinity,
-                height: 300,
-                fit: BoxFit.cover,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  Image.file(
+                    File(widget.pet.images),
+                    width: 400,
+                    height: 300,
+                    fit: BoxFit.cover,
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildCardItem('Posted by', 'Pam', 150.0),
+                      Row(
                         children: [
-                          _buildCardItem('Date', widget.pet.date, 200.0),
-                          FutureBuilder<String>(
-                            future: _locationNameFuture,
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return _buildCardItem('Location', 'Loading...', 200.0);
-                              } else if (snapshot.hasError) {
-                                return _buildCardItem('Location', 'Error', 200.0);
-                              } else {
-                                return _buildCardItem('Location', snapshot.data!, 200.0);
-                              }
+                          IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: () {
+                              // Call function to edit the post
+                              editPost(widget.pet.id);
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: () {
+                              // Show delete confirmation dialog and pass the ID
+                              showDeleteConfirmationDialog(context, widget.pet.id);
                             },
                           ),
                         ],
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 1),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildCardItem('Date', widget.pet.date, 150.0),
+                              FutureBuilder<String>(
+                                future: _locationNameFuture,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return _buildCardItem('Location', 'Loading...', 150.0);
+                                  } else if (snapshot.hasError) {
+                                    return _buildCardItem('Location', 'Error', 150.0);
+                                  } else {
+                                    return _buildCardItem('Location', snapshot.data!, 150.0);
+                                  }
+                                },
+                              ),
+                              _buildCardItem('Breed', widget.pet.breed, 150.0),
+                              _buildCardItem('Gender', widget.pet.gender, 150.0),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildCardItem('Size', widget.pet.size, 150.0),
+                              _buildCardItem('Color', widget.pet.color, 150.0),
+                              _buildCardItem('Actions Taken', widget.pet.actionTaken, 150.0),
+                              _buildCardItem('Condition', widget.pet.condition, 150.0),
+                            ],
+                          ),
+                        ),
+                      ),
+                      
+                    ],
+                  ),
+                  SizedBox(
+  height: 80.0, // Set your desired height
+  child: Expanded(
+    child: Padding(
+      padding: const EdgeInsets.all(5.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildCardItem('Details', widget.pet.details, 320.0),
+        ],
+      ),
+    ),
+  ),
+),
+
+                  const SizedBox(height: 5),
+                  const Text(
+                    'Comments:',
+                    style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 5),
+                  SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.grey,
+                            child: const Icon(Icons.person),
+                          ),
+                          title: const Text('Ella'),
+                          subtitle: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 131, 131, 131),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: const Text(
+                              'Going...',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                        ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.grey,
+                            child: const Icon(Icons.person),
+                          ),
+                          title: const Text('Jia'),
+                          subtitle: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 131, 131, 131),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: const Text(
+                              'Lorem ipsum Lorem ipsum Lorem ipsum Lorem ipsum',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                        ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.grey,
+                            child: const Icon(Icons.person),
+                          ),
+                          title: const Text('Casandra'),
+                          subtitle: Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              color: const Color.fromARGB(255, 131, 131, 131),
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            child: const Text(
+                              'Comment.',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildCardItem('Breed', widget.pet.breed, 200.0),
-                          _buildCardItem('Gender', widget.pet.gender, 200.0),
-                        ],
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: TextField(
+                            decoration: const InputDecoration(
+                              hintText: 'Type your comment here...',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                      ElevatedButton(
+                        onPressed: () {
+                          // functionality here
+                        },
+                        child: const Text('Post'),
+                      ),
+                    ],
                   ),
                 ],
               ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Close'),
+              ),
             ],
-          ),
+          );
+        },
+      );
+    },
+    child: SizedBox(
+      width: widget.width,
+      child: Card(
+        margin: const EdgeInsets.all(10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Image.file(
+              File(widget.pet.images),
+              width: double.infinity,
+              height: 300,
+              fit: BoxFit.cover,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildCardItem('Date', widget.pet.date, 200.0),
+                        FutureBuilder<String>(
+                          future: _locationNameFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return _buildCardItem('Location', 'Loading...', 200.0);
+                            } else if (snapshot.hasError) {
+                              return _buildCardItem('Location', 'Error', 200.0);
+                            } else {
+                              return _buildCardItem('Location', snapshot.data!, 200.0);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildCardItem('Breed', widget.pet.breed, 200.0),
+                        _buildCardItem('Gender', widget.pet.gender, 200.0),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildCardItem(String title, dynamic value, double itemWidth) {
     String displayValue = value?.toString() ?? 'Unknown';
@@ -559,6 +584,193 @@ Widget build(BuildContext context) {
       },
     );
   }
+
+ void editPost(int postId) {
+  // Retrieve the pet details using the postId and open the edit dialog
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      // Define controllers for the text fields
+      
+      TextEditingController detailsController = TextEditingController(text: widget.pet.details);
+      
+      // Initialize variables with current pet details
+      String gender = widget.pet.gender;
+      String size = widget.pet.size;
+      String breed = widget.pet.breed;
+      String color = widget.pet.color;
+      String actionTaken = widget.pet.actionTaken;
+      String condition = widget.pet.condition;
+      
+      return AlertDialog(
+        title: const Text('Edit Post'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              
+              
+              // Gender selection
+              DropdownButtonFormField<String>(
+                value: gender,
+                items: ['Male', 'Female'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  gender = newValue!;
+                },
+                decoration: const InputDecoration(labelText: 'Gender'),
+              ),
+              
+              // Size selection
+              DropdownButtonFormField<String>(
+                value: size,
+                items: ['Small', 'Medium', 'Large'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  size = newValue!;
+                },
+                decoration: const InputDecoration(labelText: 'Size'),
+              ),
+              
+              // Breed selection
+              DropdownButtonFormField<String>(
+                value: breed,
+                items: ['Aspin', 'Puspin', 'Chihuahua', 'Poodle', 'Shih Tzu', 'Persian Cat'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  breed = newValue!;
+                },
+                decoration: const InputDecoration(labelText: 'Breed'),
+              ),
+              
+              // Color selection
+              DropdownButtonFormField<String>(
+                value: color,
+                items: ['Solid', 'Bi-Color', 'Tri-color'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  color = newValue!;
+                },
+                decoration: const InputDecoration(labelText: 'Color'),
+              ),
+              
+              // Action taken selection
+              DropdownButtonFormField<String>(
+                value: actionTaken,
+                items: ['No Actions Taken', 'Adopted', 'Fostered', 'Brought to Shelter'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  actionTaken = newValue!;
+                },
+                decoration: const InputDecoration(labelText: 'Actions Taken'),
+              ),
+              
+              // Condition selection
+              DropdownButtonFormField<String>(
+                value: condition,
+                items: ['Injured', 'Fine'].map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  condition = newValue!;
+                },
+                decoration: const InputDecoration(labelText: 'Condition'),
+              ),
+              
+              // Details text field
+              TextField(
+                controller: detailsController,
+                decoration: const InputDecoration(labelText: 'Details'),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              // Prepare the updated data
+              Map<String, dynamic> updatedStrayData = {
+                'gender': gender,
+                'size': size,
+                'breed': breed,
+                'color': color,
+                'actionTaken': actionTaken,
+                'condition': condition,
+                'details': detailsController.text,
+                'locationLat': widget.pet.locationLat,
+                'locationLng': widget.pet.locationLng,
+                'isRescued': actionTaken != 'No Actions Taken' ? 1 : 0,
+              };
+              
+              // Call the updateStray method
+              DatabaseHelper dbHelper = DatabaseHelper.instance;
+              dbHelper.updateStray(postId, updatedStrayData).then((rowsAffected) {
+                if (rowsAffected > 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Post updated successfully.')),
+                  );
+                  setState(() {
+                    // Update the pet details locally
+                    widget.pet.gender = gender;
+                    widget.pet.size = size;
+                    widget.pet.breed = breed;
+                    widget.pet.color = color;
+                    widget.pet.actionTaken = actionTaken;
+                    widget.pet.condition = condition;
+                    widget.pet.details = detailsController.text;
+                  });
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Error updating post.')),
+                  );
+                }
+              }).catchError((error) {
+                print('Error updating post: $error');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('An error occurred while updating the post.')),
+                );
+              });
+              
+              Navigator.of(context).pop();
+            },
+            child: const Text('Save'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancel'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
  void _deleteStrayItem(int strayId) async {
   try {

@@ -6,13 +6,13 @@ class Pet {
   final int id;
   final String images;
   final DateTime date;
-  final String gender;
-  final String size;
-  final String breed;
-  final String color;
-  final String actionTaken;
-  final String condition;
-  final String details;
+  late final String gender;
+  late final String size;
+  late final String breed;
+  late final String color;
+  late final String actionTaken;
+  late final String condition;
+  late final String details;
   final double locationLat; // Latitude attribute
   final double locationLng; // Longitude attribute
   final String postedBy;
